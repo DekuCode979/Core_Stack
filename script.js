@@ -4,7 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const scoreEl = document.getElementById('score');
   const levelEl = document.getElementById('level');
   const finalScoreEl = document.getElementById('final-score');
+  const startOverlay = document.getElementById('start-overlay');
+  const gameOverModal = document.getElementById('game-over-modal');
   const width = 10;
+
   let cells = [], nextCells = [];
   let score = 0, level = 1, speed = 800, timerId = null;
 
@@ -38,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let nType = keys[Math.floor(Math.random() * keys.length)], 
       nColor = colors[Math.floor(Math.random() * colors.length)];
 
-  // --- Rotación segura (Wall Kick) ---
+  // Rotación segura
   function isRotationSafe(newRotation, newPos) {
     const centerCol = newPos % width;
     return newRotation.every(idx => {
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Colisiones ---
+  // Colisiones
   function checkCollision(move) {
     return shapes[curType][curRot].some(idx => {
       const nextIdx = curPos + idx + move;
@@ -77,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Spawning ---
+  // Spawning
   function spawn() {
     curType = nType; curColor = nColor;
     curRot = 0; curPos = 3;
@@ -96,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Dibujar piezas ---
+  // Dibujar piezas
   function draw(active) {
     shapes[curType][curRot].forEach(idx => {
       if(cells[curPos + idx]) {
@@ -106,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Congelar pieza y limpiar líneas ---
+  // Congelar pieza y limpiar líneas
   function freeze() {
     shapes[curType][curRot].forEach(idx => cells[curPos + idx].classList.add('taken', curColor));
     clearLines();
@@ -134,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Controles ---
+  // Controles
   window.control = (dir) => {
     if (!timerId) return;
     draw(false);
@@ -152,14 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
     draw(true);
   };
 
-  // --- Loop principal ---
+  // Loop principal
   function startLoop() {
     clearInterval(timerId);
     timerId = setInterval(() => control('DOWN'), speed);
   }
 
+  // Iniciar juego con transición suave
   window.startGame = () => {
-    document.getElementById('start-overlay').style.display = 'none';
+    startOverlay.style.opacity = '1';
+    startOverlay.style.transition = 'opacity 0.8s ease';
+    startOverlay.style.opacity = '0';
+    setTimeout(() => startOverlay.style.display = 'none', 800);
     spawn(); draw(true); startLoop();
   };
 
@@ -167,10 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
     clearInterval(timerId);
     timerId = null;
     finalScoreEl.innerText = score;
-    document.getElementById('game-over-modal').style.display = 'flex';
+    gameOverModal.style.display = 'flex';
   }
 
-  // --- Controles por teclado ---
+  // Controles por teclado
   document.onkeydown = (e) => {
     const k = {37:'LEFT', 39:'RIGHT', 40:'DOWN', 38:'UP', 90:'Z', 32:'SPACE'};
     if(k[e.keyCode]) {
